@@ -1,0 +1,22 @@
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+.playlists {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1em;
+    padding: 1em;
+}
+
+.playlist {
+    text-decoration: none;
+    color: black;
+}
+
+.playlist:hover {
+    background-color: green;
+    color: white;
+}

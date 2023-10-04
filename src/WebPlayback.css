@@ -1,0 +1,69 @@
+#background-image {
+    background-size: 200em;
+    background-position: center;
+    display: block;
+    filter: blur(10px);
+    -webkit-filter: blur(10px);
+    height: 800px;
+    left: 0;
+    position: fixed;
+    right: 0;
+    z-index: 1;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    /* z-index: 2;
+    right: 1em;
+    left: 1em;
+    top: 1em;
+    bottom: 1em; */
+}
+
+.main-wrapper {
+    margin: 2em 1em 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.now-playing__side {
+    margin: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.playback-buttons {
+    display: flex;
+    gap: 0.25em;
+}
+
+.btn-spotify {
+    background-color: white;
+    border: 1px solid green;
+    cursor: pointer;
+}
+
+.btn-spotify:hover {
+    background-color: green;
+    color: white;
+    border: 1px solid green;
+}
+
+/* @media (prefers-reduced-motion: no-preference) {
+    .now-playing__cover {
+        animation: cover-art-spin infinite 5s linear;
+    }
+}
+
+@keyframes cover-art-spin {
+    from {
+        transform: rotateY(0deg);
+    }
+
+    to {
+        transform: rotateY(360deg);
+    }
+} */
