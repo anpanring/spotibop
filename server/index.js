@@ -1,13 +1,13 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const path = require('path');
 
 const port = 8080;
 
 dotenv.config();
 
-var spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
-var spotify_client_secrete = process.env.SPOTIFY_CLIENT_SECRET;
+const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
+const spotify_client_secrete = process.env.SPOTIFY_CLIENT_SECRET;
+const spotify_redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
 var access_token;
 
 var app = express();
@@ -36,7 +36,7 @@ app.get('/auth/login', (req, res) => {
         response_type: "code",
         client_id: spotify_client_id,
         scope: scope,
-        redirect_uri: "http://localhost:3000/auth/callback",
+        redirect_uri: spotify_redirect_uri,
         state: state
     });
 
@@ -55,7 +55,7 @@ app.get('/auth/callback', (req, res) => {
         },
         body: new URLSearchParams({
             code: code,
-            redirect_uri: "http://localhost:3000/auth/callback",
+            redirect_uri: spotify_redirect_uri,
             grant_type: 'authorization_code'
         }),
         json: true

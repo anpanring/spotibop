@@ -26,10 +26,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1em;
 }
 
 .now-playing__side {
-    margin: 1em;
     display: flex;
     flex-direction: column;
     align-items: center;
