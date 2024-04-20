@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Playlists from './Playlists';
 import './WebPlayback.css';
 
@@ -16,86 +16,133 @@ const track = {
 
 function WebPlayback({ token }) {
 
-    const [player, setPlayer] = useState(undefined);
-    const [is_paused, setPaused] = useState(false);
-    const [is_active, setActive] = useState(false);
+    const [player, setPlayer] = useState(null);
+    const [isPaused, setPaused] = useState(false);
+    const [isActive, setActive] = useState(false);
+    const [time, setTime] = useState(-1);
     const [current_track, setTrack] = useState(track);
-    const [cover_size, setCoverSize] = useState(300);
+    const [devices, setDevices] = useState([]);
+
+    const canvasRef = useRef(null);
+
+    setInterval(() => {
+        if(player) {
+            player.getCurrentState().then(state => {
+                if (!state) {
+                    return;
+                }
+                let posMins = Math.floor(state.position / 1000 / 60);
+                let posSecs = Math.floor(state.position / 1000 % 60);
+                posSecs = posSecs < 10 ? "0" + posSecs : posSecs;
+
+                let durMins = Math.floor(state.duration / 1000 / 60);
+                let durSecs = Math.floor(state.duration / 1000 % 60);
+                durSecs = durSecs < 10 ? "0" + durSecs : durSecs;
+
+                setTime(
+                    posMins + ":" + posSecs + " / " + durMins + ":" + durSecs);
+            });
+        
+        }
+    }, 500);
 
     useEffect(() => {
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            // console.log(localStorage.getItem("anpanMusic"));
+
+            if (player == null) {
+                var newPlayer = new window.Spotify.Player({
+                    name: 'ANPAN MUSIC ★',
+                    getOAuthToken: cb => { cb(token); },
+                    volume: 0.5
+                });
+
+                newPlayer.addListener('ready', ({ device_id }) => {
+                    console.log('Ready with Device ID', device_id);
+                });
+    
+                newPlayer.addListener('not_ready', ({ device_id }) => {
+                    console.log('Device ID has gone offline', device_id);
+                });
+    
+                newPlayer.addListener('player_state_changed', (state => {
+                    if (!state) {
+                        return;
+                    }
+    
+                    setTrack(state.track_window.current_track);
+                    setPaused(state.paused);
+                    // document.getElementById('background-image').style.backgroundImage = `url('${state.track_window.current_track.album.images[0].url}')`;
+    
+                    newPlayer.getCurrentState().then(state => {
+                        (!state) ? setActive(false) : setActive(true)
+                    });
+                }));
+
+                setPlayer(newPlayer);
+                console.log('new player created');
+    
+                console.log('Connecting player...');
+                newPlayer.connect();
+    
+                return () => {
+                    console.log('Disconnecting player...');
+                    newPlayer.disconnect();
+                }
+            }
+        };
+    });
+
+    useEffect(() => {
+        console.log(current_track);
+
         const script = document.createElement("script");
         script.src = "https://sdk.scdn.co/spotify-player.js";
         script.async = true;
 
         document.body.appendChild(script);
 
-        // async function getAvailableDevices() {
-        //     console.log(token);
-        //     const response = await fetch("https://api.spotify.com/v1/me/player/devices", {
-        //         method: 'GET',
-        //         headers: {
-        //             'Accept': 'application/json',
-        //             'Content-Type': 'application/json',
-        //             "Authorization": "Bearer " + token,
-        //         }
-        //     })
-        //     const data = await response.json();
-        //     console.log(data);
-        // };
+        const ctx = canvasRef.current.getContext('2d');
+        const img = new Image();
+        img.src = current_track.album.images[0].url;
+        img.crossOrigin = "anonymous";
+        console.log(img.src);
+        ctx.drawImage(img, 0, 0);
 
-        // getAvailableDevices();
+        // const imgData = ctx.getImageData(0, 0, 300, 300);
+        // console.log(imgData);
+        // for(let i = 0; i < imgData.data.length; i += 4) {
+        //     console.log(imgData.data[i]);
+        // }
+        // ctx.putImageData(imgData, 0, 0);
 
-        window.onSpotifyWebPlaybackSDKReady = () => {
-            // console.log(localStorage.getItem("anpanMusic"));
-
-            var player = new window.Spotify.Player({
-                name: 'ANPAN MUSIC ★',
-                getOAuthToken: cb => { cb(token); },
-                volume: 0.5
-            });
-
-            setPlayer(player);
-            // localStorage.setItem("anpanMusic", JSON.stringify(player));
-            console.log(player);
-
-            player.addListener('ready', ({ device_id }) => {
-                console.log('Ready with Device ID', device_id);
-            });
-
-            player.addListener('not_ready', ({ device_id }) => {
-                console.log('Device ID has gone offline', device_id);
-            });
-
-            player.addListener('player_state_changed', (state => {
-                if (!state) {
-                    return;
+        async function getAvailableDevices() {
+            console.log(token);
+            const response = await fetch("https://api.spotify.com/v1/me/player/devices", {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + token,
                 }
-
-                setTrack(state.track_window.current_track);
-                setPaused(state.paused);
-                // document.getElementById('background-image').style.backgroundImage = `url('${state.track_window.current_track.album.images[0].url}')`;
-
-                player.getCurrentState().then(state => {
-                    (!state) ? setActive(false) : setActive(true)
-                });
-            }));
-
-            console.log('Connecting player...');
-            player.connect();
-
-            return () => {
-                console.log('Disconnecting player...');
-                player.disconnect();
-            }
+            })
+            const data = await response.json();
+            console.log(data);
+            setDevices(data.devices);
         };
-    }, []);
+
+        getAvailableDevices();
+
+
+    }, [current_track]);
 
     return (
         <>
             {/* <div id="background-image"></div> */}
             <div id="container">
                 <div className="main-wrapper">
-                    <img src={current_track.album.images[0].url} width={cover_size} height={cover_size} className="now-playing__cover" alt="" />
+                    <canvas id="art" width={300} height={300} ref={canvasRef}></canvas>
+                    {/* <img src={current_track.album.images[0].url} width={coverSize} height={coverSize} className="now-playing__cover" alt="" /> */}
 
                     <div className="now-playing__side">
                         <div className="now-playing__name">
@@ -103,8 +150,10 @@ function WebPlayback({ token }) {
                         </div>
 
                         <div className="now-playing__artist">
-                            {current_track.artists[0].name}
+                            {current_track.artists.map(artist => artist.name).join(", ")}
                         </div>
+
+                        <div>{time}</div>
                     </div>
                     <div className="playback-buttons">
                         <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
@@ -112,7 +161,7 @@ function WebPlayback({ token }) {
                         </button>
 
                         <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
-                            {is_paused ? "PLAY" : "PAUSE"}
+                            {isPaused ? "PLAY" : "PAUSE"}
                         </button>
 
                         <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
@@ -120,8 +169,10 @@ function WebPlayback({ token }) {
                         </button>
                     </div>
 
-                    {/* <button onClick={() => setCoverSize(cover_size + 10)}>+</button>
-                    <button onClick={() => setCoverSize(cover_size - 10)}>-</button> */}
+                    <div>{devices.map(device => device.name).join(", ")}</div>
+
+                    {/* <button onClick={() => setCoverSize(coverSize + 10)}>+</button>
+                    <button onClick={() => setCoverSize(coverSize - 10)}>-</button> */}
                 </div>
                 <div>
                     <Playlists token={token} />
