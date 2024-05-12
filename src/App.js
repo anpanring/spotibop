@@ -4,18 +4,25 @@ import Login from './Login';
 import './App.css';
 
 function App() {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(document.cookie.split('=')[1]);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   console.log(document.cookie);
+  //   if(document.cookie.includes('access_token')) {
+  //     console.log(document.cookie.split('=')[1]);
+  //     setToken(document.cookie.split('=')[1]);
+  //   }
+      
 
-    async function getToken() {
-      const response = await fetch('/auth/token');
-      const spotToken = await response.json();
-      setToken(spotToken.access_token);
-    }
+  //   // async function getToken() {
+  //   //   const response = await fetch('/auth/token');
+  //   //   const spotToken = await response.json();
+  //   //   setToken(spotToken.access_token);
+  //   // }
 
-    getToken();
-  }, []);
+  //   // getToken();
+    
+  // }, []);
 
   return (
     <>

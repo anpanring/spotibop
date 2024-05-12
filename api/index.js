@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 
 // get authorization code
 app.get('/auth/login', (req, res) => {
-    var scope = "streaming user-read-email user-read-private user-read-playback-state playlist-read-private";
+    var scope = "streaming user-read-email user-read-private user-read-playback-state playlist-read-private user-modify-playback-state";
     var state = generateRandomString(16);
     var auth_query_params = new URLSearchParams({
         response_type: "code",
@@ -66,6 +66,8 @@ app.get('/auth/callback', (req, res) => {
         .then(data => {
             console.log(data);
             access_token = data.access_token;
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.cookie('access_token', access_token);
             res.redirect("/");
         });
 });

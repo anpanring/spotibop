@@ -33,6 +33,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* gap: 0.25em; */
+}
+
+.now-playing__artist {
+    /* font-size: 0.75em; */
 }
 
 .playback-buttons {
@@ -52,6 +57,10 @@
     border: 1px solid green;
 }
 
+canvas {
+    display: none;
+}
+
 /* @media (prefers-reduced-motion: no-preference) {
     .now-playing__cover {
         animation: cover-art-spin infinite 5s linear;
@@ -67,3 +76,28 @@
         transform: rotateY(360deg);
     }
 } */
+
+
+
+.ascii {
+    font-family: monospace;
+    display: flex;
+    gap: 0.25em;
+    line-height: 7.5px;
+}
+
+.asciiChar {
+    display: inline;
+}
+
+.asciiRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 1em;
+}
